@@ -264,3 +264,17 @@ ServiceReference ref = ctx.getServiceReference(Greeting.class.getName());
 ```
 ((Greeting) ctx.getService(ref)).sayHello();
 ```
+
+<b>Philosophy</b>
+
+The service implementation and the client should be packaged into separate bundle JAR files. The metadata for each bundle declares its corresponding activator, but the service implementation exports the `org.foo.hello` package, whereas the client imports it.
+
+
+The client bundles metadata only needs to declare an import for the `Greeting` interface package. It has no direct dependency on the actual service implementation. This makes it super easy to swap service implementations dynamically without restarting the client bundle.
+
+
+#### Principle Wrap-Up
+
+- If you want only better modularity, use the module layer
+- If you want to initialize modules and interact with the module layer, use the lifecycle layer.
+- If you want a dynamic, interface-based development approach, use all three layers.

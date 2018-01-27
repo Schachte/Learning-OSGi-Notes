@@ -230,3 +230,98 @@ Because versions change and continuously changing the bundle name would be more 
 Bundle-SymbolicName: org.foo.shape
 Bundle-Version: 2.0.0
 ```
+
+`Bundle-ManifestVersion: 2` is necessary if you need to maintain backward compatibility with legacy bundles before OSGi R4.
+
+### Code Visibility
+
+The OSGi spec allows for metadata to describe which code is visible internally in a bundle and which internal code is visible externally.
+
+- Internal Bundle Class Path: The code forming the bundle
+- Exported Internal Code: Explicitly exposed code from the bundle class path for sharing with other bundles
+- Imported External Code: External code on which the bundle class path code depends
+
+In a standard JAR file, the Java class path will search for all directories that exist within the root class path of the JAR until a given class is found.
+
+On the contrary, for OSGi, there is the notion of a bundle class path. This is an ordered, comma-separated list to tell other bundle jar locations where to search explicitly for a given class.
+
+Classes in the same bundle have access to all code reachable on their bundle class path.
+
+The bundle class path is defined in the MANIFEST using the following attribute name: `Bundle-ClassPath` which will have associated (comma-separated values) of the internal classes within the bundle and their respective locations.
+
+`Bundle-ClassPath: .,other-classes/,embedded.jar`
+
+Something like the above will tell the classloader where to look for different classes or resources.
+
+The `.` above signifies the bundle JAR file. This shows that the bundle is searched first for root-relative packages.
+
+### Extremely Good Explanation of Bundle-ClassPath and Import-Packages
+
+[CLICK HERE TO READ](https://stackoverflow.com/a/16939053/8891397)
+
+### Flexibility of the Bundle Class Path
+The bundle class path doesn't apply only to classes, but also to external resources as well.
+
+For example, you may want to package an external XML resource, .png image or html file into a resources directory.
+
+In some situations, you may have a legacy JAR file that cannot be changed. In this case you could utilize an `embedded JAR` approach, you can add the JAR into the metadata and use it without changing any of the source code
+
+`
+Another benefit of embedding a jar is that if you want a private copy of a JAR file without having to share the same static member variables utilized by other Classes.
+`
+
+### Class In A Bundle Visibility Explained
+
+A standard JAR exposes everything relative to the root by default. Within OSGi, NOTHING is exposed by default.
+
+To take advantage of exposing externally useful code, such as an API for your clients, then must take use of the `Export-Package` syntax in the `MANIFEST`.
+
+The value for this attribute is a comma separated list of packages to share with other bundles.
+
+##### Important Note About Sharing
+OSGi `doesn't` share at the class-level, but at the `package level`.
+
+```
+Export-Package: org.foo.shape; vendor="Manning", org.foo.other;
+ vendor="Manning"
+ ```
+
+ Attaching a vendor attribute allows you to distinguish who is exporting what if multiple bundles are exporting the same package.
+
+##### Summary Note:
+ `
+ Both Bundle-ClassPath and Export-Package deal with the visibility of internal bundle code. Normally, a bundle is also dependent on external code.
+ `
+
+ [CLICK HERE TO READ BUNDLE-CLASSPATH/IMPORT TRADE_OFF](https://stackoverflow.com/a/16939053/8891397)
+
+
+ ### Understanding Importing External Packages
+
+ There is a high chance that your bundle classes will require access to external code outside of the bundle you are dealing with. In order to deal with this, you can use the `Import-Package` syntax. Not to be confused with the standard Java `import` keyword for namespace resolution, `Import-Package` specifically allows your bundle to import external dependencies explicitly.
+
+ One thing to note, external packages that are included will not automatically include nested packages of those included packages. Those need to be included as well.
+
+ ```
+ Import-Package: org.foo.shape; vendor="Manning"
+ ```
+
+ ### Summary
+
+ We’ve covered a lot of ground in this chapter. Some of the highlights include the following:
+
+```
+    - Modularity is a form of separation of concerns that provides both logical and physical encapsulation of classes.
+
+    - Modularity is desirable because it allows you to break applications into logically independent pieces that can be independently changed and reasoned about.
+    Bundle is the name for a module in OSGi. It’s a JAR file containing code, resources, and modularity metadata.
+
+    - Modularity metadata details human-readable information, bundle identification, and code visibility.
+
+    - Bundle code visibility is composed of an internal class path, exported packages, and imported packages, which differs significantly from the global type assumption of standard JAR files.
+
+    - The OSGi framework uses the metadata about imported and exported packages to automatically resolve bundle dependencies and ensure type consistency before a bundle can be used.
+
+    - Imported and exported packages capture inter-bundle package dependencies, but uses constraints are necessary to capture intra-bundle package dependencies to ensure complete type consistency.
+
+```

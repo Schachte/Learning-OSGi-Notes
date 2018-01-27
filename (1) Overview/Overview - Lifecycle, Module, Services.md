@@ -1,5 +1,5 @@
 # Let's Learn OSGi
-<hr/>
+
 
 ### What is OSGI?
 
